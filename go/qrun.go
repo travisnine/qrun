@@ -14,6 +14,9 @@ var queueDone chan byte = make(chan byte)
 
 func qRunner() {
 	for qItem := range myQueue {
+		if qItem == "" {
+			break
+		}
 		for _, x := range myArgsIdx {
 			myArgs[x] = qItem
 		}
@@ -59,7 +62,7 @@ func main() {
 		fmt.Printf("Added: %v\n", text)
 	}
 	fmt.Println("EOF Reached")
-	close(myQueue)
+	go queue("")
 	<-queueDone
 	return
 }
