@@ -7,16 +7,15 @@ import (
 	"os/exec"
 )
 
+const BUFFER_SIZE = 1024 * 1024
+
 var myArgs []string
 var myArgsIdx []int
-var myQueue chan string = make(chan string, 100)
+var myQueue chan string = make(chan string, BUFFER_SIZE)
 var queueDone chan byte = make(chan byte)
 
 func qRunner() {
 	for qItem := range myQueue {
-		if qItem == "" {
-			break
-		}
 		for _, x := range myArgsIdx {
 			myArgs[x] = qItem
 		}
@@ -27,10 +26,6 @@ func qRunner() {
 		cmd.Run()
 	}
 	queueDone <- 1
-}
-
-func queue(txt string) {
-	myQueue <- txt
 }
 
 func main() {
@@ -58,11 +53,11 @@ func main() {
 		if text[0] == 4 {
 			break
 		}
-		go queue(text)
+		myQueue <- text
 		fmt.Printf("Added: %v\n", text)
 	}
 	fmt.Println("EOF Reached")
-	go queue("")
+	close(myQueue)
 	<-queueDone
 	return
 }
